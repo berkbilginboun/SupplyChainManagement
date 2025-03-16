@@ -123,10 +123,7 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
 
     return value(model.objective)
 
-
-
-#Unilock promotes in April, Q&H does not promote
-qh_demand, unilock_demand = adjust_demand(qh_promo=None, unilock_promo=4)
-qh_profit = solve_profit_optimization("QH", qh_demand)
-unilock_profit = solve_profit_optimization("Unilock", unilock_demand)
-
+#  Q&H promotes in April, Unilock promotes in August
+qh_demand, unilock_demand = adjust_demand(qh_promo=4, unilock_promo=8)
+qh_profit = solve_profit_optimization("QH", qh_demand, promo_month=4)
+unilock_profit = solve_profit_optimization("Unilock", unilock_demand, promo_month=8)
