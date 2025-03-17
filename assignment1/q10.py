@@ -1,4 +1,4 @@
-from pulp ifrom pulp import *
+from pulp import *
 
 months = list(range(1, 13))
 
@@ -39,17 +39,15 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 unilock_demand[promo_month + 1] *= 0.75
                 unilock_demand[promo_month + 2] *= 0.75
 
-                # transfer lost demand to the competitor
-                unilock_demand[promo_month + 1] += lost_demand_qh_1
-                unilock_demand[promo_month + 2] += lost_demand_qh_2
-                qh_demand[promo_month + 1] += lost_demand_unilock_1
-                qh_demand[promo_month + 2] += lost_demand_unilock_2
+                # transfer lost demand
+                unilock_demand[promo_month] += lost_demand_unilock_1 + lost_demand_unilock_2
+                qh_demand[promo_month] += lost_demand_qh_1 + lost_demand_qh_2
+
 
             elif qh_promo == promo_month:
-                # q&h promotes -> its demand increases by 50%, reducing unilock's demand accordingly
-                extra_demand = unilock_demand[promo_month] * 0.5  # Q&H gains this amount
-                qh_demand[promo_month] += extra_demand
-                unilock_demand[promo_month] -= extra_demand  # Unilock loses customers
+                # q&h promotes -> its demand increases by 50%
+                qh_demand[promo_month] = qh_demand[promo_month] * 1.5
+
 
                 # forward buying effect
                 lost_demand_1 = qh_demand[promo_month + 1] * 0.2
@@ -57,25 +55,14 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 qh_demand[promo_month + 1] *= 0.8
                 qh_demand[promo_month + 2] *= 0.8
 
-                # unilock gains the lost forward buying demand
-                unilock_demand[promo_month + 1] += lost_demand_1
-                unilock_demand[promo_month + 2] += lost_demand_2
+                # q&h gains the lost forward buying demand
+                qh_demand[promo_month] += lost_demand_1 + lost_demand_2
+
 
             elif unilock_promo == promo_month:
-                # unilock promotes -> its demand increases by 50%, reducing q&h's demand accordingly
-                extra_demand = qh_demand[promo_month] * 0.5  # unilock gains this amount
-                unilock_demand[promo_month] += extra_demand
-                qh_demand[promo_month] -= extra_demand  # q&h loses customers
+                # unilock promotes -> reducing q&h's demand by 50%
+                qh_demand[promo_month] = qh_demand[promo_month] * 0.5  # q&h loses customers
 
-                # forward buying effect
-                lost_demand_1 = unilock_demand[promo_month + 1] * 0.2
-                lost_demand_2 = unilock_demand[promo_month + 2] * 0.2
-                unilock_demand[promo_month + 1] *= 0.8
-                unilock_demand[promo_month + 2] *= 0.8
-
-                # q&h gains the lost forward buying demand
-                qh_demand[promo_month + 1] += lost_demand_1
-                qh_demand[promo_month + 2] += lost_demand_2
 
     return qh_demand, unilock_demand
 

@@ -66,6 +66,7 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
 
     return qh_demand, unilock_demand
 
+
 def solve_profit_optimization(firm_name, demand, promo_month=None):
     model = LpProblem(f"Profit_Maximization_{firm_name}", LpMaximize)
 
@@ -101,15 +102,30 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
 
     model.solve()
 
-    print(f"\n{firm_name} Solution Status: {LpStatus[model.status]}")
-    print(f"{firm_name} Total Profit: {value(model.objective)}")
-
-    for t in months:
-        print(f"Month {t}: Production={P[t].varValue}, Subcontract={C[t].varValue}, Stock={S[t].varValue}")
-
     return value(model.objective)
 
-# Both firms promote in April
-qh_demand, unilock_demand = adjust_demand(qh_promo=4, unilock_promo=4)
-qh_profit = solve_profit_optimization("QH", qh_demand, promo_month=4)
-unilock_profit = solve_profit_optimization("Unilock", unilock_demand, promo_month=4)
+# finding the best maximin strategy for q&h (minimize worst case scenario)
+possible_combinations = [
+    (None, None), (None, 4), (None, 8),
+    (4, None), (4, 4), (4, 8),
+    (8, None), (8, 4), (8, 8)
+]
+
+qh_min_profits = {}
+
+# find the worst-case scenario for each QH promo option
+for qh_promo in [None, 4, 8]:
+    worst_qh_profit = float("inf") #positive infinity
+    for unilock_promo in [None, 4, 8]:
+        qh_demand, unilock_demand = adjust_demand(qh_promo=qh_promo, unilock_promo=unilock_promo)
+        qh_profit = solve_profit_optimization("QH", qh_demand, promo_month=qh_promo)
+        worst_qh_profit = min(worst_qh_profit, qh_profit)  # Track the worst case for this QH promo
+    qh_min_profits[qh_promo] = worst_qh_profit
+
+# select the strategy with the best worst-case profit (maximin)
+best_maximin_qh_strategy = max(qh_min_profits, key=qh_min_profits.get)
+maximin_qh_profit = qh_min_profits[best_maximin_qh_strategy]
+
+# Print the best maximin strategy for Q&H
+print(f"Best maximin decision for Q&H: Promo in {best_maximin_qh_strategy}")
+print(f"Maximum Minimum QH Profit: {maximin_qh_profit}")
