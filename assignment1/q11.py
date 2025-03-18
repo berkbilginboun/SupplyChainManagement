@@ -42,6 +42,7 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 # transfer lost demand
                 unilock_demand[promo_month] += lost_demand_unilock_1 + lost_demand_unilock_2
                 qh_demand[promo_month] += lost_demand_qh_1 + lost_demand_qh_2
+                break
 
 
             elif qh_promo == promo_month:

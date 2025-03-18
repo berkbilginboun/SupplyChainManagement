@@ -42,6 +42,7 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 # transfer lost demand
                 unilock_demand[promo_month] += lost_demand_unilock_1 + lost_demand_unilock_2
                 qh_demand[promo_month] += lost_demand_qh_1 + lost_demand_qh_2
+                break
 
 
             elif qh_promo == promo_month:
@@ -115,5 +116,5 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
 #Unilock promotes in April, Q&H does not promote
 qh_demand, unilock_demand = adjust_demand(qh_promo=None, unilock_promo=4)
 qh_profit = solve_profit_optimization("QH", qh_demand)
-unilock_profit = solve_profit_optimization("Unilock", unilock_demand)
+unilock_profit = solve_profit_optimization("Unilock", unilock_demand,promo_month=4)
 

@@ -42,6 +42,7 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 # transfer lost demand
                 unilock_demand[promo_month] += lost_demand_unilock_1 + lost_demand_unilock_2
                 qh_demand[promo_month] += lost_demand_qh_1 + lost_demand_qh_2
+                break
 
 
             elif qh_promo == promo_month:
@@ -108,6 +109,7 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
         print(f"Month {t}: Production={P[t].varValue}, Subcontract={C[t].varValue}, Stock={S[t].varValue}")
 
     return value(model.objective)
+
 # Both firms promote in August
 qh_demand, unilock_demand = adjust_demand(qh_promo=8, unilock_promo=8)
 qh_profit = solve_profit_optimization("QH", qh_demand, promo_month=8)
