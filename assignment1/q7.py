@@ -12,7 +12,7 @@ final_inventory = 150
 safety_stock = 100
 production_capacity = 320
 material_cost = 1000
-labor_cost = 10
+labor_cost = 320000
 inventory_cost = 100
 subcontracting_cost = 1200
 selling_price = 2600
@@ -22,7 +22,6 @@ promo_price = 2340  # discounted price in a promotion month
 # function to adjust demand based on promotions
 def adjust_demand(qh_promo=None, unilock_promo=None):
     qh_demand = base_demand.copy()
-    unilock_demand = base_demand.copy()
 
     for promo_month in [qh_promo, unilock_promo]:
         if promo_month is not None and promo_month <= 10:  # last two months can't have forward buying
@@ -30,17 +29,12 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 # both firms promote -> no total demand increase, only forward buying occurs
                 lost_demand_qh_1 = qh_demand[promo_month + 1] * 0.25
                 lost_demand_qh_2 = qh_demand[promo_month + 2] * 0.25
-                lost_demand_unilock_1 = unilock_demand[promo_month + 1] * 0.25
-                lost_demand_unilock_2 = unilock_demand[promo_month + 2] * 0.25
 
                 # apply forward buying reduction
                 qh_demand[promo_month + 1] *= 0.75
                 qh_demand[promo_month + 2] *= 0.75
-                unilock_demand[promo_month + 1] *= 0.75
-                unilock_demand[promo_month + 2] *= 0.75
 
                 # transfer lost demand
-                unilock_demand[promo_month] += lost_demand_unilock_1 + lost_demand_unilock_2
                 qh_demand[promo_month] += lost_demand_qh_1 + lost_demand_qh_2
                 break
 
@@ -65,7 +59,7 @@ def adjust_demand(qh_promo=None, unilock_promo=None):
                 qh_demand[promo_month] = qh_demand[promo_month] * 0.5  # q&h loses customers
 
 
-    return qh_demand, unilock_demand
+    return qh_demand
 
 def solve_profit_optimization(firm_name, demand, promo_month=None):
     model = LpProblem(f"Profit_Maximization_{firm_name}", LpMaximize)
@@ -78,7 +72,7 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
     # objective function
     model += lpSum(
         (promo_price if t == promo_month else selling_price) * demand[t] -
-        ((material_cost + labor_cost) * P[t] + subcontracting_cost * C[t] + inventory_cost * S[t])
+        (material_cost * P[t] + subcontracting_cost * C[t] + inventory_cost * S[t]  + labor_cost)
         for t in months)
 
     # inventory balance constraints
@@ -103,14 +97,15 @@ def solve_profit_optimization(firm_name, demand, promo_month=None):
     model.solve()
 
     print(f"\n{firm_name} Solution Status: {LpStatus[model.status]}")
-    print(f"{firm_name} Total Profit: {value(model.objective)}")
+
 
     for t in months:
         print(f"Month {t}: Production={P[t].varValue}, Subcontract={C[t].varValue}, Stock={S[t].varValue}")
 
+    print(f"{firm_name} Total Profit: {value(model.objective)}")
     return value(model.objective)
 
 # Both firms promote in April
-qh_demand, unilock_demand = adjust_demand(qh_promo=4, unilock_promo=4)
+qh_demand = adjust_demand(qh_promo=4, unilock_promo=4)
 qh_profit = solve_profit_optimization("QH", qh_demand, promo_month=4)
-unilock_profit = solve_profit_optimization("Unilock", unilock_demand, promo_month=4)
+

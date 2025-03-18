@@ -10,7 +10,7 @@ final_inventory = 150
 safety_stock = 100
 production_capacity = 320
 material_cost = 1000
-labor_cost = 10
+labor_cost = 320000
 inventory_cost = 100
 subcontracting_cost = 1200
 
@@ -23,8 +23,8 @@ C = {t : LpVariable(name=f"C_{t}",lowBound=0)for t in months} #subcontract produ
 S = {t : LpVariable(name=f"S_{t}",lowBound=0)for t in months} #stock
 
 #objective function
-model += lpSum((material_cost + labor_cost) * P[t] + subcontracting_cost * C[t]
-               + inventory_cost * S[t] for t in months)
+model += lpSum(material_cost * P[t] + subcontracting_cost * C[t]
+               + inventory_cost * S[t] + labor_cost for t in months)
 
 #constraints
 
