@@ -11,7 +11,7 @@ x = [[LpVariable(f"x_{j}_{k}", cat=LpBinary) for k in range(n)] for j in range(n
 I = [[LpVariable(f"I_{i}_{k}", lowBound=0) for k in range(n - 1)] for i in range(m)]
 W = [[LpVariable(f"W_{i}_{k}", lowBound=0) for k in range(n)] for i in range(m - 1)]
 
-# Objective as required by assignment slides
+
 model += (
     lpSum(x[j][0] * p[j][i] for j in range(n) for i in range(m - 1)) +
     lpSum(I[m - 1][k] for k in range(n - 1))
@@ -41,7 +41,6 @@ for j in range(n):
         if value(x[j][k]) == 1:
             job_seq[k] = j
 
-# True start/finish time calculation
 start = np.zeros((n, m))
 finish = np.zeros((n, m))
 
